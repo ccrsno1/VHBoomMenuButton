@@ -47,7 +47,7 @@ static NSString *const kFadeViewAnimation = @"kFadeViewAnimation";
 
 @property (nonatomic, assign) CGFloat startPositionX;
 @property (nonatomic, assign) CGFloat startPositionY;
-@property (nonatomic, assign) BOOL ableToStartDragging;
+//@property (nonatomic, assign) BOOL ableToStartDragging;
 @property (nonatomic, assign) BOOL isDragging;
 @property (nonatomic, strong) CAShapeLayer *buttonLayer;
 @property (nonatomic, assign) VHButtonStateEnum lastButtonState;
@@ -278,7 +278,7 @@ static NSString *const kFadeViewAnimation = @"kFadeViewAnimation";
     _buttonRightMargin = 20;
     _bottomHamButtonTopMargin = -1;
     
-    _ableToStartDragging = NO;
+    //    _ableToStartDragging = NO;
     _isDragging = NO;
     _lastButtonState = VHButtonStateUnknown;
     
@@ -332,7 +332,7 @@ static NSString *const kFadeViewAnimation = @"kFadeViewAnimation";
         [self.buttonLayer setPath:[[UIBezierPath bezierPathWithOvalInRect:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)] CGPath]];
         [self toLastState];
         [[self layer] addSublayer:self.buttonLayer];
-
+        
         if (self.hasShadow)
         {
             self.layer.masksToBounds = NO;
@@ -498,14 +498,15 @@ static NSString *const kFadeViewAnimation = @"kFadeViewAnimation";
 {
     UITouch *anyTouch = [touches anyObject];
     CGPoint touchLocation = [anyTouch locationInView:self];
+    CGPoint supertouchLocation = [anyTouch locationInView:self.superview];
+    
     if (CGRectContainsPoint(self.bounds, touchLocation) && self.userInteractionEnabled)
     {
         [self toHighlighted];
         if (self.draggable)
         {
-            self.startPositionX      = touchLocation.x;
-            self.startPositionY      = touchLocation.y;
-            self.ableToStartDragging = YES;
+            self.startPositionX  = supertouchLocation.x;
+            self.startPositionY  = supertouchLocation.y;
         }
     }
 }
@@ -513,12 +514,17 @@ static NSString *const kFadeViewAnimation = @"kFadeViewAnimation";
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
     UITouch *anyTouch = [touches anyObject];
-    if (self.draggable && self.ableToStartDragging)
-    {
+    CGPoint touchLocationInParent = [anyTouch locationInView:self.superview];
+    if (fabs(touchLocationInParent.x - self.startPositionX) >= 2 || fabs(touchLocationInParent.y - self.startPositionY) >= 2 ) {
         self.isDragging = YES;
+    }else
+        self.isDragging = NO;
+    
+    if (self.isDragging)
+    {
         CGPoint touchLocationInParent = [anyTouch locationInView:self.superview];
-        self.frame = CGRectMake(touchLocationInParent.x - self.startPositionX,
-                                touchLocationInParent.y - self.startPositionY,
+        self.frame = CGRectMake(touchLocationInParent.x - self.frame.size.width/2.0f,
+                                touchLocationInParent.y - self.frame.size.height/2.0f,
                                 self.frame.size.width,
                                 self.frame.size.height);
     }
@@ -536,10 +542,10 @@ static NSString *const kFadeViewAnimation = @"kFadeViewAnimation";
 {
     if (self.isDragging)
     {
-        self.ableToStartDragging = NO;
         self.isDragging = NO;
         self.needToCalculateStartPositions = YES;
         [self preventDragOutside];
+        
     }
     else
     {
@@ -548,7 +554,7 @@ static NSString *const kFadeViewAnimation = @"kFadeViewAnimation";
         if (CGRectContainsPoint(self.bounds, touchLocation))
         {
             [self boom];
-        }        
+        }
     }
     
     [self toNormal];
@@ -560,7 +566,6 @@ static NSString *const kFadeViewAnimation = @"kFadeViewAnimation";
     
     if (self.isDragging)
     {
-        self.ableToStartDragging = NO;
         self.isDragging = NO;
         self.needToCalculateStartPositions = YES;
         [self preventDragOutside];
@@ -885,8 +890,8 @@ static NSString *const kFadeViewAnimation = @"kFadeViewAnimation";
         
         if (self.use3DTransformAnimation)
         {
-//            CAKeyframeAnimation *rotateXAnimation = [VHAnimationManager rotateXAnimationFromFrames:self.frames startY:startPosition.y endY:endPosition.y delay:0 duration:duration];
-//            CAKeyframeAnimation *rotateYAnimation = [VHAnimationManager rotateYAnimationFromFrames:self.frames startX:startPosition.x endX:endPosition.x delay:0 duration:duration];
+            //            CAKeyframeAnimation *rotateXAnimation = [VHAnimationManager rotateXAnimationFromFrames:self.frames startY:startPosition.y endY:endPosition.y delay:0 duration:duration];
+            //            CAKeyframeAnimation *rotateYAnimation = [VHAnimationManager rotateYAnimationFromFrames:self.frames startX:startPosition.x endX:endPosition.x delay:0 duration:duration];
             CAKeyframeAnimation *rotateXAnimation = [VHAnimationManager rotateXAnimationFromVelocity:ys delay:0 duration:duration];
             CAKeyframeAnimation *rotateYAnimation = [VHAnimationManager rotateYAnimationFromVelocity:xs delay:0 duration:duration];
             [VHAnimationManager addAnimations:boomButton forKey:kBoomButton3DAnimation, rotateXAnimation, rotateYAnimation, nil];
@@ -1014,8 +1019,8 @@ static NSString *const kFadeViewAnimation = @"kFadeViewAnimation";
         
         if (self.use3DTransformAnimation)
         {
-//            CAKeyframeAnimation *rotateXAnimation = [VHAnimationManager rotateXAnimationFromFrames:self.frames startY:startPosition.y endY:endPosition.y delay:0 duration:duration];
-//            CAKeyframeAnimation *rotateYAnimation = [VHAnimationManager rotateYAnimationFromFrames:self.frames startX:startPosition.x endX:endPosition.x delay:0 duration:duration];
+            //            CAKeyframeAnimation *rotateXAnimation = [VHAnimationManager rotateXAnimationFromFrames:self.frames startY:startPosition.y endY:endPosition.y delay:0 duration:duration];
+            //            CAKeyframeAnimation *rotateYAnimation = [VHAnimationManager rotateYAnimationFromFrames:self.frames startX:startPosition.x endX:endPosition.x delay:0 duration:duration];
             CAKeyframeAnimation *rotateXAnimation = [VHAnimationManager rotateXAnimationFromVelocity:ys delay:0 duration:duration];
             CAKeyframeAnimation *rotateYAnimation = [VHAnimationManager rotateYAnimationFromVelocity:xs delay:0 duration:duration];
             [VHAnimationManager addAnimations:boomButton forKey:kBoomButton3DAnimation, rotateXAnimation, rotateYAnimation, nil];
@@ -1696,7 +1701,7 @@ static NSString *const kFadeViewAnimation = @"kFadeViewAnimation";
     [self clearPieces];
     [self clearBuilders];
     [self clearButtons];
-//    [self setNeedsLayout];
+    //    [self setNeedsLayout];
     [self setNeedsDisplay];
 }
 
